@@ -1,15 +1,12 @@
 from mesa import Agent
 import random
 
-from model import EpidemicModel
 
 
 class PersonAgent(Agent):
 
-    def __init__(self, unique_id, model: EpidemicModel):
+    def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
-        # Just for type hints
-        self.model: EpidemicModel = model
 
         self.state = "S"
         self.infection_time = 0
