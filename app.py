@@ -49,7 +49,6 @@ with st.sidebar:
     steps = st.slider("Steps", 10, 200, 100)
     step_delay = st.slider("Delay per step (s)", 0.0, 1.0, 0.3, step=0.05)
 
-    # Parametry specyficzne dla modelu
     extra_kwargs = {}
 
     if model_name == "Vaccine":
@@ -113,7 +112,7 @@ if st.button("Start Simulation", type="primary"):
     for step_num in range(steps):
         model.step()
 
-        grid_rgb = np.ones((grid_size, grid_size, 3)) * 0.12  # ciemne tło
+        grid_rgb = np.ones((grid_size, grid_size, 3)) * 0.12
         for agent in model.scheduler.agents:
             x, y = agent.pos
             color, _, _ = STATE_COLORS.get(agent.state, ([1, 1, 1], "", ""))
@@ -147,10 +146,9 @@ if st.button("Start Simulation", type="primary"):
         grid_placeholder.pyplot(fig_grid)
         plt.close(fig_grid)
 
-        # ── 2. Wykres liniowy ──────────────────────────────────
         data = model.datacollector.get_model_vars_dataframe()
         for state in active_states:
-            col_name = STATE_COLORS[state][2]  # "Susceptible", "Infected" …
+            col_name = STATE_COLORS[state][2]
             if col_name in data.columns:
                 history[state] = data[col_name].tolist()
 
@@ -182,7 +180,6 @@ if st.button("Start Simulation", type="primary"):
         chart_placeholder.pyplot(fig_chart)
         plt.close(fig_chart)
 
-        # ── 3. Metryki liczbowe ────────────────────────────────
         with metrics_placeholder.container():
             cols = st.columns(len(active_states))
             for i, state in enumerate(active_states):
