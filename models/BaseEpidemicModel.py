@@ -31,12 +31,11 @@ class BaseEpidemicModel(Model):
         self.infection_prob = infection_prob
         self.recovery_time = recovery_time
 
-        self._configure(**kwargs)
-
         self.grid = MultiGrid(width, height, torus=True)
         self.scheduler = RandomActivation(self)
 
         self._init_grid(width, height)
+        self._configure(**kwargs)
         self._init_patient_zero()
         self._init_datacollector()
         self.datacollector.collect(self)

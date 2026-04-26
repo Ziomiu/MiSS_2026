@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import streamlit as st
 
-from models import VaccineModel, HospitalModel, SEIRModel, BaseEpidemicModel
+from models import VaccineModel, HospitalModel, SEIRModel, BaseEpidemicModel, FriendGroupModel
 
 STATE_COLORS = {
     "S": ([0.22, 0.48, 0.85], "blue", "Susceptible"),
@@ -20,6 +20,7 @@ MODEL_STATES = {
     "Vaccine": ["S", "I", "R", "V"],
     "Hospital": ["S", "I", "H", "R"],
     "SEIR": ["S", "E", "I", "R"],
+    "Friend groups": ["S", "I", "R"]
 }
 
 MODEL_CLASSES = {
@@ -27,6 +28,7 @@ MODEL_CLASSES = {
     "Vaccine": VaccineModel,
     "Hospital": HospitalModel,
     "SEIR": SEIRModel,
+    "Friend groups": FriendGroupModel
 }
 
 st.set_page_config(page_title="Epidemic Simulation", layout="wide")
@@ -109,6 +111,21 @@ with st.sidebar:
         extra_kwargs["exposure_time"] = st.slider(
             "Exposure time (steps)", 3, 20, 7,
             help="Liczba kroków, po których agent narażony (w stanie E) stanie się zakaźny (stan I)."
+        )
+    elif model_name == "Friend groups":
+        st.divider()
+        st.header("Friend groups parameters")
+        extra_kwargs["friend_groups_num"] = st.slider(
+            "Number of friend groups", 5, 20, 10,
+            help="Liczba grup przyjaciół w populacji."
+        )
+        extra_kwargs["meeting_time"] = st.slider(
+            "Time (steps) of a meeting", 3, 7, 5,
+            help="Liczba kroków, przez ile trwa pojedyncze spotkanie grupy przyjaciół."
+        )
+        extra_kwargs["meeting_cooldown"] = st.slider(
+            "Cooldown (steps) between meetings", 10, 30, 20,
+            help="Minimalny odstęp między kolejnymi spotkaniami wyrażony w liczbie kroków."
         )
 
 current_params = {
