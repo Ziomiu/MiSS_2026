@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import streamlit as st
 
-from models import VaccineModel, HospitalModel, SEIRModel, BaseEpidemicModel, FriendGroupModel
+from models import VaccineModel, HospitalModel, SEIRModel, BaseEpidemicModel, SIRDModel, FriendGroupModel
 
 STATE_COLORS = {
     "S": ([0.22, 0.48, 0.85], "blue", "Susceptible"),
@@ -13,10 +13,12 @@ STATE_COLORS = {
     "H": ([0.70, 0.10, 0.70], "purple", "Hospitalized"),
     "R": ([0.20, 0.72, 0.35], "green", "Recovered"),
     "V": ([0.20, 0.75, 0.85], "cyan", "Vaccinated"),
+    "D": ([0.01, 0.01, 0.01], "black", "Deceased")
 }
 
 MODEL_STATES = {
     "Base SIR": ["S", "I", "R"],
+    "SIRD": ["S", "I", "R", "D"],
     "Vaccine": ["S", "I", "R", "V"],
     "Hospital": ["S", "I", "H", "R"],
     "SEIR": ["S", "E", "I", "R"],
@@ -25,6 +27,7 @@ MODEL_STATES = {
 
 MODEL_CLASSES = {
     "Base SIR": BaseEpidemicModel,
+    "SIRD": SIRDModel,
     "Vaccine": VaccineModel,
     "Hospital": HospitalModel,
     "SEIR": SEIRModel,
@@ -83,7 +86,14 @@ with st.sidebar:
 
     extra_kwargs = {}
 
-    if model_name == "Vaccine":
+    if model_name == "SIRD":
+        st.divider()
+        st.header("SIRD parameters")
+        extra_kwargs["death_prob"] = st.slider(
+            "Death probability", 0.01, 0.2, 0.05,
+            help="Prawdopodobieństwo, z jakim agent zakaźny (w stanie I) umrze (stan D) w każdym kroku."
+        )
+    elif model_name == "Vaccine":
         st.divider()
         st.header("Vaccine parameters")
         extra_kwargs["vaccination_start"] = st.slider(
@@ -199,8 +209,8 @@ with col_chart:
 
 # -----------------------------------------------
 
-# Function to plot population chart - separated to not repeat code 
-def plot_population():
+# Function to plot grid and population chart - separated to not repeat code 
+def plot_grid_and_population():
     grid_rgb = np.ones((grid_size, grid_size, 3)) * 0.12
     for agent in st.session_state.model.scheduler.agents:
         x, y = agent.pos
@@ -292,7 +302,7 @@ if st.session_state.model is not None:
             st.session_state.model.step()
             st.session_state.current_step += 1
 
-            plot_population()
+            plot_grid_and_population()
 
             elapsed_time = time.perf_counter() - start_time
 
@@ -307,8 +317,8 @@ if st.session_state.model is not None:
                 # some minimal time is required for gui to react
                 time.sleep(max(0.01, step_delay - elapsed_time))
 
-        plot_population()
+        plot_grid_and_population()
         st.success(f"Simulation complete after {steps} steps.")
         
     else:
-        plot_population()
+        plot_grid_and_population()
