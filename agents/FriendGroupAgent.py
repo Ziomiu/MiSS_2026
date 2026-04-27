@@ -26,14 +26,15 @@ class FriendGroupAgent(BasePersonAgent):
 
         if self.current_cooldown == 0: # agents want to meet with friends
             neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=True)
-            num_friends = 0
+            all_friends = True
 
             for friend in self.friend_group:
-                if friend in neighbors:
-                    num_friends += 1
+                if friend not in neighbors:
+                    all_friends = False
+                    break
 
-            # Start the meeting if at least half the group is present
-            if num_friends > len(self.friend_group) // 2:
+            # Start the meeting if the whole group is present
+            if all_friends:
                 self.current_time = 0
                 return
 
