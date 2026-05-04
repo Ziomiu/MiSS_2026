@@ -16,18 +16,14 @@ class HospitalAgent(BasePersonAgent):
             super().infect_neighbors()
 
     def _try_hospitalize(self):
-        if (not self.hospitalized
-                and self.model.hospital_current < self.model.hospital_capacity
-                and random.random() < self.model.hospitalization_prob):
+        if (
+            not self.hospitalized
+            and self.model.hospital_current < self.model.hospital_capacity
+            and random.random() < self.model.hospitalization_prob
+        ):
             self.hospitalized = True
             self.state = "H"
             self.model.hospital_current += 1
-
-    def _recover(self):
-        if self.hospitalized:
-            self.model.hospital_current -= 1
-            self.hospitalized = False
-        self.state = "R"
 
     def step(self):
         self.move()
@@ -36,4 +32,10 @@ class HospitalAgent(BasePersonAgent):
             self._try_hospitalize()
             self.infection_time += 1
             if self.infection_time >= self.model.recovery_time:
-                self._recover()
+                self.state = "R"
+        elif self.state == "H":
+            self.infection_time += 1
+            if self.infection_time >= self.model.recovery_time:
+                self.model.hospital_current -= 1
+                self.hospitalized = False
+                self.state = "R"

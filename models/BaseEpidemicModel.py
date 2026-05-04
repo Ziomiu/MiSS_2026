@@ -2,8 +2,8 @@ from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
 from mesa.datacollection import DataCollector
-import random
 from agents.BasePersonAgent import BasePersonAgent
+import random
 
 
 def count_state(model, state):
@@ -58,7 +58,7 @@ class BaseEpidemicModel(Model):
             self.scheduler.add(agent)
             self.grid.place_agent(agent, (
                 random.randrange(width),
-                random.randrange(height),
+                random.randrange(height)
             ))
 
     def _init_patient_zero(self):
@@ -69,7 +69,7 @@ class BaseEpidemicModel(Model):
         base_reporters = {
             "Susceptible": lambda m: count_state(m, "S"),
             "Infected": lambda m: count_state(m, "I"),
-            "Recovered": lambda m: count_state(m, "R"),
+            "Recovered": lambda m: count_state(m, "R")
         }
         base_reporters.update(self._extra_reporters())
         self.datacollector = DataCollector(model_reporters=base_reporters)

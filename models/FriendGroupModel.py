@@ -7,9 +7,9 @@ import math
 class FriendGroupModel(BaseEpidemicModel):
     """
     Każdy z zarażonych agentów przynależy do pewnej grupy znajomych.
-    Agenci w obrębie grupy przyjaciół co ustaloną liczbę kroków `meeting_cooldown` dążą do spotkania
-    ze znajomymi, które trwa `meeting_time` kroków i zaczyna się, gdy jest obecna cała grupa.
-    Podczas spotkania agenci nie ruszają się.
+    Agenci w obrębie grupy przyjaciół co ustaloną liczbę kroków (`meeting_cooldown`)
+    dążą do spotkania ze znajomymi, które trwa `meeting_time` kroków i zaczyna się,
+    gdy jest obecna cała grupa. Podczas spotkania agenci nie ruszają się.
     """
 
     agent_class = FriendGroupAgent
@@ -36,13 +36,19 @@ class FriendGroupModel(BaseEpidemicModel):
                 agent = self._make_agent(i)
                 self.scheduler.add(agent)
                 self.grid.place_agent(agent, (
-                    random.randrange(max(0, hotspot_x - radius_x), min(width, hotspot_x + radius_x)),
-                    random.randrange(max(0, hotspot_y - radius_y), min(height, hotspot_y + radius_y)),
+                    random.randrange(
+                        max(0, hotspot_x - radius_x),
+                        min(width, hotspot_x + radius_x)
+                    ),
+                    random.randrange(
+                        max(0, hotspot_y - radius_y),
+                        min(height, hotspot_y + radius_y)
+                    )
                 ))
                 friend_group.add(agent)
                 i += 1
 
-            # Setting up agents
+            # Setting up agents attributes
             for agent in friend_group:
                 agent.friend_group = friend_group
                 agent.hotspot = hotspot

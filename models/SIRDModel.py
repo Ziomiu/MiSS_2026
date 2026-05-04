@@ -9,7 +9,7 @@ class SIRDModel(BaseEpidemicModel):
 
     agent_class = SIRDAgent
 
-    def _configure(self, death_prob=3, **kwargs):
+    def _configure(self, death_prob=0.05, **kwargs):
         self.death_prob = death_prob
 
     def _extra_reporters(self):

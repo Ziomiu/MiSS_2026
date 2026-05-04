@@ -1,6 +1,4 @@
 from agents.BasePersonAgent import BasePersonAgent
-import random
-import math
 
 
 class FriendGroupAgent(BasePersonAgent):
@@ -25,7 +23,13 @@ class FriendGroupAgent(BasePersonAgent):
             self.current_cooldown = max(self.current_cooldown - 1, 0)
 
         if self.current_cooldown == 0: # agents want to meet with friends
-            neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=True)
+            neighbors = self.model.grid.get_cell_list_contents(
+                self.model.grid.get_neighborhood(
+                    self.pos,
+                    moore=True,
+                    include_center=True
+                )
+            )
             all_friends = True
 
             for friend in self.friend_group:
@@ -38,8 +42,12 @@ class FriendGroupAgent(BasePersonAgent):
                 self.current_time = 0
                 return
 
-            dx = 1 if self.hotspot[0] > self.pos[0] else -1 if self.hotspot[0] < self.pos[0] else 0
-            dy = 1 if self.hotspot[1] > self.pos[1] else -1 if self.hotspot[1] < self.pos[1] else 0
+            dx = 1 if self.hotspot[0] > self.pos[0] \
+                else -1 if self.hotspot[0] < self.pos[0] \
+                else 0
+            dy = 1 if self.hotspot[1] > self.pos[1] \
+                else -1 if self.hotspot[1] < self.pos[1] \
+                else 0
             new_pos = (self.pos[0] + dx, self.pos[1] + dy)
 
             if new_pos == (0, 0):

@@ -1,6 +1,5 @@
-from mesa import Agent
+from mesa import Agent, Model
 import random
-from mesa import Model
 
 
 class BasePersonAgent(Agent):
@@ -23,7 +22,7 @@ class BasePersonAgent(Agent):
             self.model.grid.get_neighborhood(
                 self.pos,
                 moore=True,
-                include_center=False,
+                include_center=True
             )
         )
         for agent in neighbors:

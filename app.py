@@ -4,33 +4,33 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import streamlit as st
 
-from models import VaccineModel, HospitalModel, SEIRModel, BaseEpidemicModel, SIRDModel, FriendGroupModel
+from models import BaseEpidemicModel, HospitalModel, SEIRModel, SIRDModel, VaccineModel, FriendGroupModel
 
 STATE_COLORS = {
     "S": ([0.22, 0.48, 0.85], "blue", "Susceptible"),
-    "E": ([0.95, 0.60, 0.10], "orange", "Exposed"),
     "I": ([0.85, 0.20, 0.20], "red", "Infected"),
-    "H": ([0.70, 0.10, 0.70], "purple", "Hospitalized"),
     "R": ([0.20, 0.72, 0.35], "green", "Recovered"),
-    "V": ([0.20, 0.75, 0.85], "cyan", "Vaccinated"),
-    "D": ([0.01, 0.01, 0.01], "black", "Deceased")
+    "H": ([0.70, 0.10, 0.70], "purple", "Hospitalized"),
+    "E": ([0.95, 0.60, 0.10], "orange", "Exposed"),
+    "D": ([0.01, 0.01, 0.01], "black", "Deceased"),
+    "P": ([0.20, 0.75, 0.85], "cyan", "Partially immune")
 }
 
 MODEL_STATES = {
     "Base SIR": ["S", "I", "R"],
-    "SIRD": ["S", "I", "R", "D"],
-    "Vaccine": ["S", "I", "R", "V"],
-    "Hospital": ["S", "I", "H", "R"],
+    "Hospital": ["S", "I", "R", "H"],
     "SEIR": ["S", "E", "I", "R"],
+    "SIRD": ["S", "I", "R", "D"],
+    "Vaccine": ["S", "I", "P"],
     "Friend groups": ["S", "I", "R"]
 }
 
 MODEL_CLASSES = {
     "Base SIR": BaseEpidemicModel,
-    "SIRD": SIRDModel,
-    "Vaccine": VaccineModel,
     "Hospital": HospitalModel,
     "SEIR": SEIRModel,
+    "SIRD": SIRDModel,
+    "Vaccine": VaccineModel,
     "Friend groups": FriendGroupModel
 }
 
@@ -68,7 +68,7 @@ with st.sidebar:
         help="Rozmiar kwadratowej siatki (N x N)."
     )
     infection_prob = st.slider(
-        "Infection probability", 0.1, 1.0, 0.4, step=0.01,
+        "Infection probability", 0.1, 1.0, 0.4,
         help="Prawdopobieństwo zakażenia agenta podatnego (w stanie S) przez agenta zakaźnego (w stanie I)."
     )
     recovery_time = st.slider(
@@ -86,7 +86,25 @@ with st.sidebar:
 
     extra_kwargs = {}
 
-    if model_name == "SIRD":
+    if model_name == "Hospital":
+        st.divider()
+        st.header("Hospital parameters")
+        extra_kwargs["hospital_capacity"] = st.slider(
+            "Hospital capacity", 10, 50, 20,
+            help="Maksymalna liczba jednocześnie zajętych łóżek szpitalnych."
+        )
+        extra_kwargs["hospitalization_prob"] = st.slider(
+            "Hospitalization probability", 0.1, 1.0, 0.2,
+            help="Prawdopodobieństwo trafienia zakażonego do szpitala w każdym kroku."
+        )
+    elif model_name == "SEIR":
+        st.divider()
+        st.header("SEIR parameters")
+        extra_kwargs["exposure_time"] = st.slider(
+            "Exposure time (steps)", 3, 20, 7,
+            help="Liczba kroków, po których agent narażony (w stanie E) stanie się zakaźny (stan I)."
+        )
+    elif model_name == "SIRD":
         st.divider()
         st.header("SIRD parameters")
         extra_kwargs["death_prob"] = st.slider(
@@ -98,29 +116,15 @@ with st.sidebar:
         st.header("Vaccine parameters")
         extra_kwargs["vaccination_start"] = st.slider(
             "Vaccination start (steps)", 5, 20, 10,
-            help="Liczba kroków od pierwszego zakażenia, po których rusza kampania."
+            help="Liczba kroków od pierwszego zakażenia, po których rusza kampania szczepień."
         )
         extra_kwargs["vaccination_rate"] = st.slider(
-            "Vaccination rate (agents/step)", 1, 20, 3,
-            help="Liczba agentów podatnych (w stanie S), którzy są szczepieni w każdym kroku po starcie kampanii."
+            "Vaccination rate (agents/step)", 1, 20, 5,
+            help="Liczba agentów podatnych (w stanie S), którzy są szczepieni w każdym kroku po starcie kampanii (przechodzą do stanu P)."
         )
-    elif model_name == "Hospital":
-        st.divider()
-        st.header("Hospital parameters")
-        extra_kwargs["hospital_capacity"] = st.slider(
-            "Hospital capacity", 10, 50, 20,
-            help="Maksymalna liczba jednocześnie zajętych łóżek szpitalnych."
-        )
-        extra_kwargs["hospitalization_prob"] = st.slider(
-            "Hospitalization probability", 0.1, 1.0, 0.2, step=0.01,
-            help="Prawdopodobieństwo trafienia zakażonego do szpitala w każdym kroku."
-        )
-    elif model_name == "SEIR":
-        st.divider()
-        st.header("SEIR parameters")
-        extra_kwargs["exposure_time"] = st.slider(
-            "Exposure time (steps)", 3, 20, 7,
-            help="Liczba kroków, po których agent narażony (w stanie E) stanie się zakaźny (stan I)."
+        extra_kwargs["transmission_rate_reduction"] = st.slider(
+            "Transmission rate reduction (%)", 60, 99, 90,
+            help="Procent zmniejszenia prawdopodobieństwa zakażenia agenta częściowo odpornego (w stanie P)."
         )
     elif model_name == "Friend groups":
         st.divider()
@@ -131,7 +135,7 @@ with st.sidebar:
         )
         extra_kwargs["meeting_time"] = st.slider(
             "Time (steps) of a meeting", 3, 7, 5,
-            help="Liczba kroków, przez ile trwa pojedyncze spotkanie grupy przyjaciół."
+            help="Liczba kroków, przez które trwa pojedyncze spotkanie grupy przyjaciół."
         )
         extra_kwargs["meeting_cooldown"] = st.slider(
             "Cooldown (steps) between meetings", 10, 30, 20,
@@ -310,15 +314,13 @@ if st.session_state.model is not None:
             if st.session_state.current_step >= steps:
                 st.rerun()
             else:
-                # it usually is around 0.3 seconds
-                # print(elapsed)
-
-                # sleep appropriate time to make the step last possibly closest to step_delay
-                # some minimal time is required for gui to react
+                # Sleep appropriate time to make the step last possibly closest to step_delay
+                # Some minimal time is required for gui to react
                 time.sleep(max(0.01, step_delay - elapsed_time))
 
         plot_grid_and_population()
         st.success(f"Simulation complete after {steps} steps.")
         
     else:
+        # Keep plots displayed even when the simulation is paused
         plot_grid_and_population()
